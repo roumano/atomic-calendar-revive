@@ -37,7 +37,8 @@ class AtomicCalendarRevive extends LitElement {
 	monthToGet: string;
 	month: any[];
 	showLoader: boolean;
-	eventSummary: TemplateResult;
+	eventSummary: any;
+	currentEventSummary: any;
 	firstrun: boolean;
 	isUpdating: any;
 	clickedDate: any;
@@ -58,8 +59,9 @@ class AtomicCalendarRevive extends LitElement {
 		this.monthToGet = moment().format('MM');
 		this.month = [];
 		this.showLoader = false;
-		this.eventSummary = html`&nbsp;`;
 		this.firstrun = true;
+		this.eventSummary = null;
+		this.currentEventSummary = null;
 		this.language = '';
 	}
 
@@ -1086,7 +1088,7 @@ class AtomicCalendarRevive extends LitElement {
 	handleMonthChange(i) {
 		this.selectedMonth = moment(this.selectedMonth).add(i, 'months');
 		this.monthToGet = this.selectedMonth.format('M');
-		this.eventSummary = html`&nbsp;`;
+		this.eventSummary = null;
 		this.refreshCalEvents = true;
 	}
 
@@ -1199,6 +1201,10 @@ class AtomicCalendarRevive extends LitElement {
 			const dayStyleSun = moment(day.date).isoWeekday() == 7 ? `background-color: ${this._config.calEventSunColor};` : ``;
 			const dayStyleClicked = moment(day.date).isSame(moment(this.clickedDate), 'day') ? `background-color: ${this._config.calActiveEventBackgroundColor};` : ``;
 
+			if (moment(day.date).isSame(moment(), 'day')) {
+				this.currentEventSummary = html`today`;
+			}
+
 			if (i < 35 || showLastRow)
 				return html`
 					${i % 7 === 0 ? html`<tr class="cal"></tr>` : ''}
@@ -1241,6 +1247,8 @@ class AtomicCalendarRevive extends LitElement {
 				<th class="cal" style="padding-bottom: 8px; color:  ${this._config.calWeekDayColor};">${day}</th>
 			`,
 		);
+		this.eventSummary = this.eventSummary == null ? this.currentEventSummary : this.eventSummary;
+
 		this.content = html`
 			<div class="calTitleContainer">
 				${this.getCalendarHeaderHTML()}
