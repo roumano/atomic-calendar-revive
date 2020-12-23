@@ -39,6 +39,7 @@ class AtomicCalendarRevive extends LitElement {
 	showLoader: boolean;
 	eventSummary: any;
 	currentEventSummary: any;
+	clickEventSummary: any;
 	firstrun: boolean;
 	isUpdating: any;
 	clickedDate: any;
@@ -1089,6 +1090,7 @@ class AtomicCalendarRevive extends LitElement {
 		this.selectedMonth = moment(this.selectedMonth).add(i, 'months');
 		this.monthToGet = this.selectedMonth.format('M');
 		this.eventSummary = null;
+		this.currentEventSummary = null;
 		this.refreshCalEvents = true;
 	}
 
@@ -1096,14 +1098,14 @@ class AtomicCalendarRevive extends LitElement {
 	 * show events summary under the calendar
 	 *
 	 */
-	handleEventSummary(day) {
+	handleEventSummary(day, currentDay = false) {
 		this.clickedDate = day.date;
 		day._allEvents.sort(function (a, b) {
 			const leftStartTime = a.start.dateTime ? moment(a.start.dateTime) : moment(a.start.date).startOf('day');
 			const rightStartTime = b.start.dateTime ? moment(b.start.dateTime) : moment(b.start.date).startOf('day');
 			return moment(leftStartTime).diff(moment(rightStartTime));
 		});
-		this.eventSummary = day._allEvents.map((event) => {
+		this.clickEventSummary = day._allEvents.map((event) => {
 			const titleColor =
 				typeof event._config.titleColor != 'undefined' ? event._config.titleColor : this._config.eventTitleColor;
 			const calColor = typeof event._config.color != 'undefined' ? event._config.color : this._config.defaultCalColor;
@@ -1138,8 +1140,13 @@ class AtomicCalendarRevive extends LitElement {
 				`;
 			}
 		});
-
+		if (moment(day.date).isSame(moment(), 'day') && currentDay == true) {
+			this.currentEventSummary = this.clickEventSummary
+		} else {
+			this.eventSummary = this.clickEventSummary
+		}
 		this.requestUpdate();
+
 	}
 
 	handleCalendarIcons(day) {
@@ -1200,11 +1207,9 @@ class AtomicCalendarRevive extends LitElement {
 			const dayStyleSat = moment(day.date).isoWeekday() == 6 ? `background-color: ${this._config.calEventSatColor};` : ``;
 			const dayStyleSun = moment(day.date).isoWeekday() == 7 ? `background-color: ${this._config.calEventSunColor};` : ``;
 			const dayStyleClicked = moment(day.date).isSame(moment(this.clickedDate), 'day') ? `background-color: ${this._config.calActiveEventBackgroundColor};` : ``;
-
 			if (moment(day.date).isSame(moment(), 'day')) {
-				this.currentEventSummary = html`today`;
+				this.handleEventSummary(day, true)
 			}
-
 			if (i < 35 || showLastRow)
 				return html`
 					${i % 7 === 0 ? html`<tr class="cal"></tr>` : ''}
@@ -1221,6 +1226,7 @@ class AtomicCalendarRevive extends LitElement {
 					</td>
 					${i && i % 6 === 0 ? html`</tr>` : ''}
 				`;
+
 		});
 	}
 
@@ -1247,8 +1253,7 @@ class AtomicCalendarRevive extends LitElement {
 				<th class="cal" style="padding-bottom: 8px; color:  ${this._config.calWeekDayColor};">${day}</th>
 			`,
 		);
-		this.eventSummary = this.eventSummary == null ? this.currentEventSummary : this.eventSummary;
-
+		const test = this.eventSummary == null ? this.currentEventSummary : this.eventSummary;
 		this.content = html`
 			<div class="calTitleContainer">
 				${this.getCalendarHeaderHTML()}
@@ -1266,7 +1271,7 @@ class AtomicCalendarRevive extends LitElement {
 				</table>
 			</div>
 			<div style="font-size: 90%;">
-				${this.eventSummary}
+				${test}
 			</div>
 		`;
 	}
