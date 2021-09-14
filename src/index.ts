@@ -1,5 +1,5 @@
 ﻿import { LitElement, html, property, TemplateResult } from 'lit-element';
-import { HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
+import { HomeAssistant, LovelaceCardEditor, FrontendLocaleData, TimeFormat } from 'custom-card-helpers';
 import '@material/mwc-linear-progress';
 
 // DayJS for managing date information
@@ -146,18 +146,34 @@ class AtomicCalendarRevive extends LitElement {
 
 	async updateCard() {
 		this.language =
-			typeof this._config.language != 'undefined' ? this._config.language! : this.hass.language.toLowerCase();
-		let timeFormat = 'HH:mm';
-		if (this._config.hoursFormat == '12h') timeFormat = 'h:mm A';
-		else if (this._config.hoursFormat == '24h') timeFormat = 'HH:mm';
-		else if (this._config.hoursFormat != '12h' && this._config.hoursFormat != '24h')
-			timeFormat = this._config.hoursFormat!;
+			typeof this._config.language != 'undefined' ? this._config.language! : this.hass.locale!.language.toLowerCase();
+
+		/*let timeFormat: string | string[] | undefined;
+		switch (this.hass.locale?.time_format) {
+			case TimeFormat.am_pm:
+				timeFormat = 'hh:mm';
+				console.log("12h")
+				break;
+			case TimeFormat.twenty_four:
+				timeFormat = 'HH:mm';
+				console.log("24h")
+				break;
+			case TimeFormat.system:
+				timeFormat = undefined;
+				console.log("undefined")
+				break;
+			default:
+				timeFormat = this.hass.locale?.time_format
+				console.log("default")
+
+		}
+		console.log(timeFormat)*/
 
 		dayjs.locale(this.language);
 		dayjs.updateLocale(this.language, {
 			weekStart: this._config.firstDayOfWeek!,
 			formats: {
-				LT: timeFormat,
+				LT: 'HH:mm',
 				LTS: 'HH:mm:ss',
 				L: 'DD/MM/YYYY',
 				LL: 'D MMMM YYYY',
