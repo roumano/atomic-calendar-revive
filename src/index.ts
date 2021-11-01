@@ -1,4 +1,4 @@
-﻿import { LitElement, html, TemplateResult } from 'lit';
+﻿import { TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
 import { HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
 import '@material/mwc-linear-progress';
@@ -29,7 +29,16 @@ import { CARD_VERSION } from './const';
 import { localize } from './localize/localize';
 import defaultConfig from './defaults';
 
-class AtomicCalendarRevive extends LitElement {
+// #####
+// ##### Get the Lit and HTML classes from an already defined HA Lovelace class
+// #####
+var Lit = Lit || Object.getPrototypeOf(customElements.get("ha-panel-lovelace") || customElements.get('hui-view'));
+var html = Lit.prototype.html;
+
+// #####
+// ##### Custom Card Definition begins
+// #####
+class AtomicCalendarRevive extends Lit {
 	@property() public hass!: HomeAssistant;
 	@property() private _config!: atomicCardConfig;
 	@property() private content;
@@ -1108,11 +1117,11 @@ class AtomicCalendarRevive extends LitElement {
 			.add(timeOffset, 'minutes').format('YYYY-MM-DDTHH:mm:ss');
 		const calendarUrlList: string[] = [];
 		this._config.entities.map((entity) => {
-			if(typeof entity.maxDaysToShow != 'undefined') {
+			if (typeof entity.maxDaysToShow != 'undefined') {
 				const altEnd = dayjs()
-						.add(entity.maxDaysToShow! - 1 + this._config.startDaysAhead!, 'day')
-						.endOf('day')
-						.add(timeOffset, 'minutes').format('YYYY-MM-DDTHH:mm:ss');
+					.add(entity.maxDaysToShow! - 1 + this._config.startDaysAhead!, 'day')
+					.endOf('day')
+					.add(timeOffset, 'minutes').format('YYYY-MM-DDTHH:mm:ss');
 				calendarUrlList.push(`calendars/${entity.entity}?start=${start}Z&end=${altEnd}Z`);
 			} else {
 				calendarUrlList.push(`calendars/${entity.entity}?start=${start}Z&end=${end}Z`);
@@ -1515,12 +1524,14 @@ class AtomicCalendarRevive extends LitElement {
 	}
 }
 
-customElements.define('atomic-calendar-revive', AtomicCalendarRevive);
+// #####
+// ##### Register the card as a customElement
+// #####
+customElements.define('atomic-calendar-revive', AtomicCalendarRevive as any);
 
-/**
- * class for 42 calendar days
- *
- */
+// #####
+// ##### CalendarDays for 42 days of events begins
+// #####
 class CalendarDay {
 	calendarDay: dayjs.Dayjs;
 	_lp: any;
@@ -1556,11 +1567,9 @@ class CalendarDay {
 	}
 }
 
-/**
- * class for Events in events mode
- *
- */
-
+// #####
+// ##### EventClass: returns events for events mode
+// #####
 class EventClass {
 	isEmpty: boolean;
 	eventClass: any;
@@ -1700,6 +1709,7 @@ class EventClass {
 	}
 }
 
+// #### Add to Custom-Card Picker
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
 	type: 'atomic-calendar-revive',
